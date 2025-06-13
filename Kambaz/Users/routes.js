@@ -4,6 +4,7 @@ import * as enrollmentsDao from "../Enrollments/dao.js";
 
 
 
+
 export default function UserRoutes(app) {
   const createUser = (req, res) => { };
   const deleteUser = (req, res) => { };
@@ -70,6 +71,7 @@ export default function UserRoutes(app) {
   };
 
   const createCourse = (req, res) => {
+    console.log('Create course API called. Request body:', req.body);
     const currentUser = req.session["currentUser"];
     if (!currentUser) {
       res.sendStatus(401);
