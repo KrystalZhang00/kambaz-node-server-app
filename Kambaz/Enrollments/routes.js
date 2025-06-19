@@ -2,7 +2,7 @@ import * as enrollmentsDao from "./dao.js";
 
 export default function EnrollmentRoutes(app) {
   // 注册课程
-  app.post("/api/enrollments/:courseId", (req, res) => {
+  app.post("/api/enrollments/:courseId", async (req, res) => {
     const { courseId } = req.params;
     const currentUser = req.session["currentUser"];
     
@@ -12,7 +12,7 @@ export default function EnrollmentRoutes(app) {
     }
     
     try {
-      const enrollment = enrollmentsDao.enrollUserInCourse(
+      const enrollment = await enrollmentsDao.enrollUserInCourse(
         currentUser._id, 
         courseId
       );
@@ -23,7 +23,7 @@ export default function EnrollmentRoutes(app) {
   });
 
   // 退出课程
-  app.delete("/api/enrollments/:courseId", (req, res) => {
+  app.delete("/api/enrollments/:courseId", async (req, res) => {
     const { courseId } = req.params;
     const currentUser = req.session["currentUser"];
     
@@ -33,7 +33,7 @@ export default function EnrollmentRoutes(app) {
     }
     
     try {
-      enrollmentsDao.unenrollUserFromCourse(currentUser._id, courseId);
+      await enrollmentsDao.unenrollUserFromCourse(currentUser._id, courseId);
       res.sendStatus(204);
     } catch (error) {
       res.status(500).json({ error: error.message });
@@ -41,7 +41,7 @@ export default function EnrollmentRoutes(app) {
   });
 
   // 获取用户的所有注册
-  app.get("/api/enrollments", (req, res) => {
+  app.get("/api/enrollments", async (req, res) => {
     const currentUser = req.session["currentUser"];
     
     if (!currentUser) {
@@ -49,12 +49,16 @@ export default function EnrollmentRoutes(app) {
       return;
     }
     
-    const enrollments = enrollmentsDao.findEnrollmentsForUser(currentUser._id);
-    res.json(enrollments);
+    try {
+      const enrollments = await enrollmentsDao.findEnrollmentsForUser(currentUser._id);
+      res.json(enrollments);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
   });
 
   // 检查是否已注册某课程
-  app.get("/api/enrollments/:courseId", (req, res) => {
+  app.get("/api/enrollments/:courseId", async (req, res) => {
     const { courseId } = req.params;
     const currentUser = req.session["currentUser"];
     
@@ -63,10 +67,14 @@ export default function EnrollmentRoutes(app) {
       return;
     }
     
-    const isEnrolled = enrollmentsDao.isUserEnrolledInCourse(
-      currentUser._id, 
-      courseId
-    );
-    res.json({ enrolled: isEnrolled });
+    try {
+      const isEnrolled = await enrollmentsDao.isUserEnrolledInCourse(
+        currentUser._id, 
+        courseId
+      );
+      res.json({ enrolled: isEnrolled });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
   });
 }

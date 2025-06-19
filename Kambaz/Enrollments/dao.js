@@ -22,14 +22,12 @@ export async function findUsersForCourse(courseId) {
   return enrollments.map((enrollment) => enrollment.user);
 }
 
-export function findEnrollmentsForUser(userId) {
-  const { enrollments } = Database;
-  return enrollments.filter((e) => e.user === userId);
+export async function findEnrollmentsForUser(userId) {
+  const enrollments = await model.find({ user: userId });
+  return enrollments;
 }
 
-export function isUserEnrolledInCourse(userId, courseId) {
-  const { enrollments } = Database;
-  return enrollments.some(
-    (e) => e.user === userId && e.course === courseId
-  );
+export async function isUserEnrolledInCourse(userId, courseId) {
+  const enrollment = await model.findOne({ user: userId, course: courseId });
+  return !!enrollment;
 }
